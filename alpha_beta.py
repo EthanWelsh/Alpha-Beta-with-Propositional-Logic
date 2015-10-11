@@ -1,6 +1,7 @@
 import ast
 import sys
 
+
 class Tree:
     class Node:
         def __init__(self, letter, score=None):
