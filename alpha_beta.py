@@ -14,7 +14,7 @@ class Tree:
 
     def __init__(self, tree):
         self.root = self.build_tree(tree)
-        self.maximize(self.root)
+        self.visited_count = 0
 
     def build_tree(self, tree):
         if type(tree) is list:
@@ -25,52 +25,46 @@ class Tree:
         elif type(tree) is tuple:
             return Tree.Node(*tree)
 
-    def get_level(self, level_num, root=None, current_level=0):
-        if root is None:
-            if self.root is not None:
-                root = self.root
-            else:
-                return
+    def alpha_beta(self, root, alpha, beta, max_player):
+        visited_count = 1
 
-        if current_level == level_num:
-            yield [(root.letter, root.score)]
-        else:
+        if len(root.children) == 0:
+            return root.score, visited_count
+
+        if max_player:
+            max_score = -sys.maxsize
             for child in root.children:
-                yield from self.get_level(level_num, root=child, current_level=current_level + 1)
+                child_score, children_visited = self.alpha_beta(child, alpha, beta, False)
 
-    def maximize(self, node):
-        max_score = -sys.maxsize
+                max_score = max(max_score, child_score)
+                alpha = max(alpha, max_score)
 
-        for child in node.children:
-            if child.score is None:
-                self.minimize(child)
+                visited_count += children_visited
 
-            if child.score is not None and child.score > max_score:
-                node.score = child.score
-                max_score = child.score
+                if beta <= alpha:
+                    break
 
-        node.score = max_score
+            return max_score, visited_count
+        else:
+            min_score = sys.maxsize
+            for child in root.children:
+                child_score, children_visited = self.alpha_beta(child, alpha, beta, True)
 
-    def minimize(self, node):
-        min_score = sys.maxsize
+                min_score = min(min_score, child_score)
+                beta = min(beta, min_score)
 
-        for child in node.children:
-            if child.score is None:
-                self.maximize(child)
+                visited_count += children_visited
 
-            if child.score is not None and child.score < min_score:
-                node.score = child.score
-                min_score = child.score
+                if beta <= alpha:
+                    break
 
-        node.score = min_score
+            return min_score, visited_count
 
 
 def main():
     tree = ast.literal_eval(sys.argv[1])
     spruce = Tree(tree)
-
-    for i in range(5):
-        print([x for x in spruce.get_level(i)])
+    print(spruce.alpha_beta(spruce.root, -sys.maxsize, sys.maxsize, True))
 
 
 if __name__ == '__main__':
