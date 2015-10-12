@@ -39,11 +39,12 @@ class Tree:
                 yield from self.get_level(level_num, root=child, current_level=current_level + 1)
 
     def maximize(self, node):
+        max_score = -sys.maxsize
+
         for child in node.children:
             if child.score is None:
                 self.minimize(child)
 
-            max_score = -sys.maxsize
             if child.score is not None and child.score > max_score:
                 node.score = child.score
                 max_score = child.score
@@ -51,11 +52,12 @@ class Tree:
         node.score = max_score
 
     def minimize(self, node):
+        min_score = sys.maxsize
+
         for child in node.children:
             if child.score is None:
                 self.maximize(child)
 
-            min_score = sys.maxsize
             if child.score is not None and child.score < min_score:
                 node.score = child.score
                 min_score = child.score
