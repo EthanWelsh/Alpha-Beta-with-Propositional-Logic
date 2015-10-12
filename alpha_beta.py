@@ -25,46 +25,47 @@ class Tree:
         elif type(tree) is tuple:
             return Tree.Node(*tree)
 
-    def alpha_beta(self, root, alpha, beta, max_player):
-        visited_count = 1
 
-        if len(root.children) == 0:
-            return root.score, visited_count
+def alpha_beta(root, alpha, beta, max_player):
+    visited_count = 1
 
-        if max_player:
-            max_score = -sys.maxsize
-            for child in root.children:
-                child_score, children_visited = self.alpha_beta(child, alpha, beta, False)
+    if len(root.children) == 0:
+        return root.score, visited_count
 
-                max_score = max(max_score, child_score)
-                alpha = max(alpha, max_score)
+    if max_player:
+        max_score = -sys.maxsize
+        for child in root.children:
+            child_score, children_visited = alpha_beta(child, alpha, beta, False)
 
-                visited_count += children_visited
+            max_score = max(max_score, child_score)
+            alpha = max(alpha, max_score)
 
-                if beta <= alpha:
-                    break
+            visited_count += children_visited
 
-            return max_score, visited_count
-        else:
-            min_score = sys.maxsize
-            for child in root.children:
-                child_score, children_visited = self.alpha_beta(child, alpha, beta, True)
+            if beta <= alpha:
+                break
 
-                min_score = min(min_score, child_score)
-                beta = min(beta, min_score)
+        return max_score, visited_count
+    else:
+        min_score = sys.maxsize
+        for child in root.children:
+            child_score, children_visited = alpha_beta(child, alpha, beta, True)
 
-                visited_count += children_visited
+            min_score = min(min_score, child_score)
+            beta = min(beta, min_score)
 
-                if beta <= alpha:
-                    break
+            visited_count += children_visited
 
-            return min_score, visited_count
+            if beta <= alpha:
+                break
+
+        return min_score, visited_count
 
 
 def main():
     tree = ast.literal_eval(sys.argv[1])
     spruce = Tree(tree)
-    print(spruce.alpha_beta(spruce.root, -sys.maxsize, sys.maxsize, True))
+    print(alpha_beta(spruce.root, -sys.maxsize, sys.maxsize, True))
 
 
 if __name__ == '__main__':
