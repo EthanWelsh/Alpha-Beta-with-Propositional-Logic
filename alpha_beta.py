@@ -12,11 +12,9 @@ class Tree:
         def get_children(self):
             return self.children
 
-        def __str__(self):
-            return str(self.score)
-
     def __init__(self, tree):
         self.root = self.build_tree(tree)
+        self.maximize(self.root)
 
     def build_tree(self, tree):
         if type(tree) is list:
@@ -35,10 +33,34 @@ class Tree:
                 return
 
         if current_level == level_num:
-            yield [root.letter]
+            yield [(root.letter, root.score)]
         else:
             for child in root.children:
                 yield from self.get_level(level_num, root=child, current_level=current_level + 1)
+
+    def maximize(self, node):
+        for child in node.children:
+            if child.score is None:
+                self.minimize(child)
+
+            max_score = -sys.maxsize
+            if child.score is not None and child.score > max_score:
+                node.score = child.score
+                max_score = child.score
+
+        node.score = max_score
+
+    def minimize(self, node):
+        for child in node.children:
+            if child.score is None:
+                self.maximize(child)
+
+            min_score = sys.maxsize
+            if child.score is not None and child.score < min_score:
+                node.score = child.score
+                min_score = child.score
+
+        node.score = min_score
 
 
 def main():
