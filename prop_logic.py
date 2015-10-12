@@ -25,7 +25,22 @@ class AtomicSentence:
         return set(variables)
 
     def evaluate(self, var_dict):
-        pass
+
+        truth = []
+        for component in self.components:
+            if isinstance(component, str):
+                truth.append(var_dict[component])
+            else:
+                truth.append(component.evaluate(var_dict))
+
+        if self.operator == 'or':
+            return any(truth)
+        elif self.operator == 'and':
+            return all(truth)
+        elif self.operator == 'xor':
+            return not all(truth) and any(truth)
+        elif self.operator == 'not':
+            return not truth[0]
 
     def depth(self, l):
         if isinstance(l, list):
@@ -38,6 +53,7 @@ def main():
     tree = ast.literal_eval("['or', ['or', 'Smoke', 'Fire'], ['not', 'Fire']]")
     atomic = AtomicSentence(tree)
     print(atomic.get_vars())
+    print(atomic.evaluate({'Smoke':False, 'Fire': False}))
 
 
 if __name__ == '__main__':
