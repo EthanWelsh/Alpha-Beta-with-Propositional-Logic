@@ -26,7 +26,6 @@ class AtomicSentence:
         return not any(outcomes), any(outcomes) and not all(outcomes), all(outcomes)
 
     def get_vars(self):
-
         variables = []
 
         for component in self.components:
@@ -38,8 +37,8 @@ class AtomicSentence:
         return set(variables)
 
     def evaluate_truth(self, var_dict):
-
         truth = []
+
         for component in self.components:
             if isinstance(component, str):
                 truth.append(var_dict[component])
@@ -68,9 +67,9 @@ def main():
 
     unsatisfiable, satisfiable, valid = atomic.model_check()
 
-    print("unsatisfiable:", unsatisfiable)
-    print("satisfiable:", satisfiable)
-    print("valid:", valid)
+    print("Unsatisfiable:", unsatisfiable)
+    print("Satisfiable:", satisfiable)
+    print("Valid:", valid)
 
 
 if __name__ == '__main__':
