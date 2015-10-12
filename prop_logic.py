@@ -1,4 +1,5 @@
 import ast
+import itertools
 
 
 class AtomicSentence:
@@ -12,6 +13,18 @@ class AtomicSentence:
             else:
                 self.components.append(AtomicSentence(component))
 
+    def model_check(self):
+        truth_vars = list(self.get_vars())
+        truth_table = list(itertools.product([True, False], repeat=len(truth_vars)))
+
+        outcomes = []
+
+        for i in range(len(truth_table)):
+            var_dict = dict([(truth_vars[v], truth_table[i][v]) for v in range(len(truth_vars))])
+            outcomes.append(self.evaluate_truth(var_dict))
+
+        return not any(outcomes), any(outcomes) and not all(outcomes), all(outcomes)
+
     def get_vars(self):
 
         variables = []
@@ -24,14 +37,14 @@ class AtomicSentence:
 
         return set(variables)
 
-    def evaluate(self, var_dict):
+    def evaluate_truth(self, var_dict):
 
         truth = []
         for component in self.components:
             if isinstance(component, str):
                 truth.append(var_dict[component])
             else:
-                truth.append(component.evaluate(var_dict))
+                truth.append(component.evaluate_truth(var_dict))
 
         if self.operator == 'or':
             return any(truth)
@@ -52,8 +65,12 @@ class AtomicSentence:
 def main():
     tree = ast.literal_eval("['or', ['or', 'Smoke', 'Fire'], ['not', 'Fire']]")
     atomic = AtomicSentence(tree)
-    print(atomic.get_vars())
-    print(atomic.evaluate({'Smoke':False, 'Fire': False}))
+
+    unsatisfiable, satisfiable, valid = atomic.model_check()
+
+    print("unsatisfiable:", unsatisfiable)
+    print("satisfiable:", satisfiable)
+    print("valid:", valid)
 
 
 if __name__ == '__main__':
