@@ -49,8 +49,10 @@ class AtomicSentence:
             return any(truth)
         elif self.operator == 'and':
             return all(truth)
-        elif self.operator == 'xor':
-            return not all(truth) and any(truth)
+        elif self.operator == '->':
+            return not truth[0] or truth[1]
+        elif self.operator == '<->':
+            return truth[0] == truth[1]
         elif self.operator == 'not':
             return not truth[0]
 
@@ -62,14 +64,26 @@ class AtomicSentence:
 
 
 def main():
-    tree = ast.literal_eval("['or', ['or', 'Smoke', 'Fire'], ['not', 'Fire']]")
-    atomic = AtomicSentence(tree)
+    check = [
+        "['->', 'Smoke', 'Smoke']",  # A
+        "['->', 'Smoke', 'Fire']",  # B
+        "['->', ['->', 'Smoke', 'Fire'], ['->', ['not', 'Smoke'], ['not', 'Fire']]]",  # C
+        "['or', 'Smoke', 'Fire', ['not', 'Fire']]",  # D
+        "['<->', ['->', ['and', 'Smoke', 'Heat'], 'Fire'], ['or', ['->', 'Smoke', 'Fire'], ['->', 'Heat', 'Fire']]]",  # E
+        "['->', ['->', 'Smoke', 'Fire'], ['->', ['and', 'Smoke', 'Heat'], 'Fire']]",  # F
+        "['or', 'Big', 'Dumb', ['->', 'Big', 'Dumb']]",  # G
+    ]
 
-    unsatisfiable, satisfiable, valid = atomic.model_check()
+    for problem in check:
+        tree = ast.literal_eval(problem)
+        atomic = AtomicSentence(tree)
 
-    print("Unsatisfiable:", unsatisfiable)
-    print("Satisfiable:", satisfiable)
-    print("Valid:", valid)
+        unsatisfiable, satisfiable, valid = atomic.model_check()
+
+        print()
+        print("Unsatisfiable:", unsatisfiable)
+        print("Satisfiable:", satisfiable)
+        print("Valid:", valid)
 
 
 if __name__ == '__main__':
