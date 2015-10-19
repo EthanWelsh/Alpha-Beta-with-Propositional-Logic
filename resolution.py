@@ -65,14 +65,31 @@ class AtomicSentence:
         else:
             return 0
 
+    def is_negation(self, other):
+        if self.operator == 'not':
+            return self.components[0] == other
+
+    def resolve(self, alpha):
+
+        for component in self.components:
+            if isinstance(component, AtomicSentence):
+                component.resolve(alpha)
+
+        if self.operator == 'and' or self.operator == 'or':
+            for i, component in enumerate(self.components):
+                if isinstance(component, AtomicSentence) and component.is_negation(alpha):
+                    del self.components[i]
+
     def __str__(self):
-        ret = [self.operator]
-        ret.extend(str(component) for component in self.components)
-        return str(ret)
+        components = []
+        for component in self.components:
+            components.append(str(component))
+
+        ret = [self.operator, str(components)]
+        return str(ret).replace('\\', '')
 
 
 def conjunctive_normal_form(sentence):
-
     if isinstance(sentence, str):
         return sentence
 
@@ -85,10 +102,8 @@ def conjunctive_normal_form(sentence):
         sub_sentence = sentence[1]
 
         if len(sub_sentence) > 1:
-
             if sub_sentence[0] == 'not':
                 return sub_sentence[1]
-
             elif sub_sentence[0] == 'and':
                 simplified = ['or']
 
@@ -109,7 +124,6 @@ def conjunctive_normal_form(sentence):
     elif operator == '->':
         a = conjunctive_normal_form(['not', sentence[1]])
         b = conjunctive_normal_form(sentence[2])
-
         return ['or', a, b]
 
     return sentence
@@ -162,8 +176,8 @@ def main():
         'Mythical'  # The unicorn is mythical.
     ]
 
-    for test in tests:
-        print(resolve(knowledge_base, test))
+    #for test in tests:
+    #    print(resolve(knowledge_base, test))
 
 
 if __name__ == '__main__':
