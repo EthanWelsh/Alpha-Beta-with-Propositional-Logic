@@ -1,5 +1,6 @@
 import ast
 import itertools
+import sys
 
 
 class Sentence:
@@ -62,7 +63,7 @@ def resolution(kb, alpha):
 
 def main():
 
-    cnf = ast.literal_eval("[[('not', 'Mythical'), ('not', 'Mortal')], ['Mythical', 'Mortal'], ['Mythical', 'Mammal'], ['Mortal', 'Horned'], [('not', 'Mammal'), 'Horned'], [('not', 'Horned'), 'Magical']]")
+    cnf = ast.literal_eval(sys.argv[1])
 
     kb = set()
 
@@ -76,10 +77,7 @@ def main():
                 add.append(sen)
         kb |= {Sentence(add)}
 
-    print(resolution(kb, 'Horned'))
-    print(resolution(kb, 'Magical'))
-    print(resolution(kb, 'Mythical'))
-
+    print(resolution(kb, sys.argv[2]))
 
 if __name__ == '__main__':
     main()
