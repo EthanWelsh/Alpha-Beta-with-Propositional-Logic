@@ -2,183 +2,85 @@ import ast
 import itertools
 
 
-class AtomicSentence:
+class Sentence:
     def __init__(self, sentence):
+        self.terms = list()
+        for term in sentence:
 
-        self.operator = sentence[0]
-        self.components = []
-
-        for component in sentence[1:]:
-            if self.depth(component) == 0:
-                self.components.append(component)
+            if isinstance(term, tuple):
+                self.terms += "~{}".format(term[1])
             else:
-                self.components.append(AtomicSentence(component))
+                self.terms += [term]
 
-    def truth_outcomes(self):
-        truth_vars = list(self.get_vars())
-        truth_vars.sort()
-
-        truth_table = list(itertools.product([True, False], repeat=len(truth_vars)))
-
-        outcomes = []
-
-        for i in range(len(truth_table)):
-            var_dict = dict([(truth_vars[v], truth_table[i][v]) for v in range(len(truth_vars))])
-            outcomes.append(self.evaluate_truth(var_dict))
-
-        return outcomes
-
-    def get_vars(self):
-        variables = []
-
-        for component in self.components:
-            if isinstance(component, str):
-                variables.append(component)
-            else:
-                variables.extend(component.get_vars())
-
-        return set(variables)
-
-    def evaluate_truth(self, var_dict):
-        truth = []
-
-        for component in self.components:
-            if isinstance(component, str):
-                truth.append(var_dict[component])
-            else:
-                truth.append(component.evaluate_truth(var_dict))
-
-        if self.operator == 'or':
-            return any(truth)
-        elif self.operator == 'and':
-            return all(truth)
-        elif self.operator == '->':
-            return not truth[0] or truth[1]
-        elif self.operator == '<->':
-            return truth[0] == truth[1]
-        elif self.operator == 'not':
-            return not truth[0]
-
-    def depth(self, l):
-        if isinstance(l, list):
-            return 1 + max(self.depth(item) for item in l)
-        else:
-            return 0
-
-    def is_negation(self, other):
-        if self.operator == 'not':
-            return self.components[0] == other
-
-    def resolve(self, alpha):
-
-        for component in self.components:
-            if isinstance(component, AtomicSentence):
-                component.resolve(alpha)
-
-        if self.operator == 'and' or self.operator == 'or':
-            for i, component in enumerate(self.components):
-                if isinstance(component, AtomicSentence) and component.is_negation(alpha):
-                    del self.components[i]
+    def remove(self, item):
+        self.terms.remove(item)
 
     def __str__(self):
-        components = []
-        for component in self.components:
-            components.append(str(component))
+        return str(''.join(self.terms))
 
-        ret = [self.operator, str(components)]
-        return str(ret).replace('\\', '')
+    def __contains__(self, item):
+        return item in self.terms
 
 
-def conjunctive_normal_form(sentence):
-    if isinstance(sentence, str):
-        return sentence
+def negate(sentence):
 
-    for i in range(1, len(sentence)):
-        sentence[i] = conjunctive_normal_form(sentence[i])
-
-    operator = sentence[0]
-
-    if operator == 'not':
-        sub_sentence = sentence[1]
-
-        if len(sub_sentence) > 1:
-            if sub_sentence[0] == 'not':
-                return sub_sentence[1]
-            elif sub_sentence[0] == 'and':
-                simplified = ['or']
-
-                for atomic_sentence in sub_sentence[1:]:
-                    simplified.append(conjunctive_normal_form(['not', atomic_sentence]))
-
-                return simplified
-
-            elif sub_sentence[0] == 'or':
-                simplified = ['and']
-
-                for atomic_sentence in sub_sentence[1:]:
-                    simplified.append(conjunctive_normal_form(['not', atomic_sentence]))
-                return simplified
-        else:
-            return sentence
-
-    elif operator == '->':
-        a = conjunctive_normal_form(['not', sentence[1]])
-        b = conjunctive_normal_form(sentence[2])
-        return ['or', a, b]
-
-    return sentence
+    if sentence[0] == '~':
+        return sentence[1:]
+    else:
+        return '~' + sentence
 
 
-def resolve(knowledge_base, alpha):
+def resolve(sen_a, sen_b):
 
-    kb_outcomes = knowledge_base.truth_outcomes()
-    knowledge_base.components.append(AtomicSentence(['not', alpha]))
-    s_outcomes = knowledge_base.truth_outcomes()
+    set_a = set()
+    set_b = set()
 
-    for i in range(len(kb_outcomes)):
-        if kb_outcomes[i] and not s_outcomes[i]:
-            return False
+    for a in sen_a.terms:
+        set_a |= {a}
 
-    return True
+    for b in sen_b.terms:
+        set_b |= {b}
+
+    neg_a = {negate(a) for a in sen_a.terms}
+    neg_b = {negate(b) for b in sen_b.terms}
+
+    return list((set_a - neg_b) | (set_b - neg_a))
+
+
+def resolution(kb, alpha):
+
+    alpha = Sentence(negate(alpha))
+    clauses = kb | {alpha}
+
+    new = set()
+
+    for clause_a, clause_b in itertools.combinations(clauses, 2):
+        resolvents = resolve(clause_a, clause_b)
+        if [] in resolvents:
+            return True
+        new |= set(resolvents)
+    if clauses.issuperset(new):
+        return False
+    clauses |= new
 
 
 def main():
-    """
-    If the unicorn is mythical, then it is immortal, but if it is not mythical, then it is a mortal mammal. If the
-    unicorn is either immortal or a mammal, then it is horned. The unicorn is magical if it is horned.
-    """
 
-    knowledge_base = [
-        "['->', 'Mythical', 'Immortal']",                               # Mythical -> Immortal
-        "['->', ['not', 'Mythical'], ['and', 'Mortal', 'Mammal']]",     # ~Mythical -> Mortal ^ Mammal
-        "['->', ['or', 'Immortal', 'Mammal'], 'Horned']",               # (Immortal v Mammal) -> Horned
-        "['->', 'Horned', 'Magical']"                                   # Horned -> Magical
-    ]
+    cnf = ast.literal_eval("[[('not','mythical'),('not','mortal')],"
+                                          "['mythical','mortal'],"
+                                          "['mythical','mammal'],"
+                                          "[('not','immortal'),'horned'],"
+                                          "[('not','mammal'),'horned'],"
+                                          "[('not','horned'),'magical']]")
 
-    kb = ['and']
+    knowledge_base = set()
 
-    for statement in knowledge_base:
-        kb.append(ast.literal_eval(statement))
+    for sen in cnf:
+        knowledge_base |= {Sentence(sen)}
 
-    cnf_kb = conjunctive_normal_form(kb.copy())
-
-    print(kb)
-    print(cnf_kb)
-
-    knowledge_base = AtomicSentence(kb)
-    cnf_kb = AtomicSentence(cnf_kb)
-
-    #print(knowledge_base.truth_outcomes() == cnf_kb.truth_outcomes())
-
-    tests = [
-        'Horned',   # The unicorn is horned.
-        'Magical',  # The unicorn is magical.
-        'Mythical'  # The unicorn is mythical.
-    ]
-
-    #for test in tests:
-    #    print(resolve(knowledge_base, test))
-
+    print(resolution(knowledge_base, 'horned'))
+    print(resolution(knowledge_base, 'magical'))
+    print(resolution(knowledge_base, 'mythical'))
 
 if __name__ == '__main__':
     main()
