@@ -8,7 +8,7 @@ class Sentence:
         for term in sentence:
 
             if isinstance(term, tuple):
-                self.terms += "~{}".format(term[1])
+                self.terms.append("~{}".format(term[1]))
             else:
                 self.terms += [term]
 
@@ -16,7 +16,7 @@ class Sentence:
         self.terms.remove(item)
 
     def __str__(self):
-        return str(''.join(self.terms))
+        return str(str(self.terms))
 
     def __contains__(self, item):
         return item in self.terms
@@ -44,7 +44,7 @@ def resolve(sen_a, sen_b):
     neg_a = {negate(a) for a in sen_a.terms}
     neg_b = {negate(b) for b in sen_b.terms}
 
-    return list((set_a - neg_b) | (set_b - neg_a))
+    return Sentence(list((set_a - neg_b) | (set_b - neg_a)))
 
 
 def resolution(kb, alpha):
@@ -53,15 +53,15 @@ def resolution(kb, alpha):
     clauses = kb | {alpha}
 
     new = set()
-
-    for clause_a, clause_b in itertools.combinations(clauses, 2):
-        resolvents = resolve(clause_a, clause_b)
-        if [] in resolvents:
-            return True
-        new |= set(resolvents)
-    if clauses.issuperset(new):
-        return False
-    clauses |= new
+    while True:
+        for clause_a, clause_b in itertools.combinations(clauses, 2):
+            resolvents = resolve(clause_a, clause_b)
+            if [] in resolvents:
+                return True
+            new |= {resolvents}
+        if clauses.issuperset(new):
+            return False
+        clauses |= new
 
 
 def main():
@@ -78,9 +78,20 @@ def main():
     for sen in cnf:
         knowledge_base |= {Sentence(sen)}
 
-    print(resolution(knowledge_base, 'horned'))
-    print(resolution(knowledge_base, 'magical'))
-    print(resolution(knowledge_base, 'mythical'))
+    #print(resolution(knowledge_base, 'horned'))
+    #print(resolution(knowledge_base, 'magical'))
+    #print(resolution(knowledge_base, 'mythical'))
+
+    a = Sentence(('p', 'q'))
+    b = Sentence((('not', 'p'), 'r'))
+
+    print(a)
+    print(b)
+
+    res = resolve(a, b)
+    print(res)
+
+    #print(res)
 
 if __name__ == '__main__':
     main()
