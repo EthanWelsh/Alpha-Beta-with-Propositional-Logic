@@ -1,4 +1,12 @@
 # A-Propositional-Logic
 
-http://stackoverflow.com/questions/6336424/python-build-a-dynamic-growing-truth-table
-http://stackoverflow.com/questions/1790520/how-to-apply-a-logical-operator-to-all-elements-in-a-python-list
+Alpha Beta
+----------
+python alpha_beta.py "['A', ['B', ('D', 3), ('E', 5)], ['C', ['F', ['I',('K',0), ('L', 7)], ('J',5)], ['G', ('M',7), ('N',8)], ('H',4)]]"
+(4, 12)
+
+python alpha_beta.py "['A', ['B', ['D', ('H', 6), ('I', 5)], ['E', ('J', 8), ('K',7)]], ['C', ['F', ('L',2), ('M',1)], ['G',('N',4), ('O',3)]]]"
+(6, 11)
+
+python alpha_beta.py "['A', ['B', ['E', ('L', 2), ('M', 3)], ['F', ('N', 8), ('O', 5)], ['G', ('P', 7), ('Q', 6)]], ['C', ['H', ('R', 0), ('S', 1)], ['I', ('T', 5), ('U', 2)]], ['D', ['J', ('V', 8), ('W', 4)], ['K', ('X', 10), ('Y', 2)]]]"
+(8, 19)

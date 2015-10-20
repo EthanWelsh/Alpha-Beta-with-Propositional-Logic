@@ -63,19 +63,9 @@ def alpha_beta(root, alpha, beta, max_player):
 
 
 def main():
-    trees = [
-        "['A', ['B', ('D', 3), ('E', 5)], ['C', ['F', ['I',('K',0), ('L', 7)], ('J',5)], ['G', ('M',7), ('N',8)], ('H',"
-        "4)]]",
-        "['A', ['B', ['D', ('H', 6), ('I', 5)], ['E', ('J', 8), ('K',7)]], ['C', ['F', ('L',2), ('M',1)], ['G',('N',4),"
-        "('O',3)]]]",
-        "['A', ['B', ['E', ('L', 2), ('M', 3)], ['F', ('N', 8), ('O', 5)], ['G', ('P', 7), ('Q', 6)]], ['C', ['H', ('R'"
-        ", 0), ('S', 1)], ['I', ('T', 5), ('U', 2)]], ['D', ['J', ('V', 8), ('W', 4)], ['K', ('X', 10), ('Y', 2)]]]"
-    ]
-
-    for t in trees:
-        tree = ast.literal_eval(t)
-        spruce = Tree(tree)
-        print(alpha_beta(spruce.root, -sys.maxsize, sys.maxsize, True))
+    tree = ast.literal_eval(sys.argv[1])
+    spruce = Tree(tree)
+    print(alpha_beta(spruce.root, -sys.maxsize, sys.maxsize, True))
 
 
 if __name__ == '__main__':
