@@ -53,11 +53,13 @@ def resolve(sen_a, sen_b):
 
 def resolution(kb, alpha):
 
-    clauses = kb | {'~' + alpha}
+    clauses = kb | {Sentence((('not', alpha),('not', alpha)))}
     new = set()
     while True:
         for clause_a, clause_b in itertools.combinations(clauses, 2):
             resolvents = resolve(clause_a, clause_b)
+            print(clause_a, clause_b, resolvents)
+
             if [] in resolvents:
                 return True
             new |= set(resolvents)
@@ -68,21 +70,17 @@ def resolution(kb, alpha):
 
 def main():
 
-    cnf = ast.literal_eval("[[('not','mythical'),('not','mortal')],"
-                                          "['mythical','mortal'],"
-                                          "['mythical','mammal'],"
-                                          "[('not','immortal'),'horned'],"
-                                          "[('not','mammal'),'horned'],"
-                                          "[('not','horned'),'magical']]")
+    cnf = ast.literal_eval("[[('not', 'Mythical'), ('not', 'Mortal')], ['Mythical', 'Mortal'], ['Mythical', 'Mammal'], ['Mortal', 'Horned'], [('not', 'Mammal'), 'Horned'], [('not', 'Horned'), 'Magical']]")
 
     knowledge_base = set()
 
     for sen in cnf:
         knowledge_base |= {Sentence(sen)}
 
-    print(resolution(knowledge_base, 'horned'))
-    print(resolution(knowledge_base, 'magical'))
-    print(resolution(knowledge_base, 'mythical'))
+    print(resolution(knowledge_base, 'Horned'))
+    #print(resolution(knowledge_base, 'Magical'))
+    #print(resolution(knowledge_base, 'Mythical'))
+
 
 if __name__ == '__main__':
     main()
