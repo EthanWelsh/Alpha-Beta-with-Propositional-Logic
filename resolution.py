@@ -15,11 +15,23 @@ class Sentence:
     def remove(self, item):
         self.terms.remove(item)
 
-    def __str__(self):
-        return str(str(self.terms))
+    #def __str__(self):
+    #    return str(str(self.terms))
 
     def __contains__(self, item):
         return item in self.terms
+
+    def __eq__(self, other):
+
+        if isinstance(other, Sentence):
+            return self.terms == other.terms
+        if isinstance(other, str):
+            return self.terms[0] == other
+
+    def __repr__(self):
+        return str(str(self.terms))
+
+    __hash__ = lambda self: hash(repr(self))
 
 
 def negate(sentence):
@@ -44,11 +56,17 @@ def resolve(sen_a, sen_b):
     literals = sen_a + sen_b
     resolvents = []
 
+    resolution_occured = False
+
     for (x, y) in itertools.combinations(literals, 2):
         if x == negate(y):
+            resolution_occured = True
             resolvents += (set(literals) - {x, negate(x)})
 
-    return resolvents
+    if resolution_occured:
+        return resolvents
+    else:
+        return list(set(literals))
 
 
 def resolution(kb, alpha):
@@ -57,14 +75,15 @@ def resolution(kb, alpha):
     new = set()
     while True:
         for clause_a, clause_b in itertools.combinations(clauses, 2):
+
             resolvents = resolve(clause_a, clause_b)
-            print(clause_a, clause_b, resolvents)
+            #print(clause_a, clause_b, resolvents)
 
             if [] in resolvents:
                 return True
             new |= set(resolvents)
         if clauses.issuperset(new):
-            return False
+            return [str(clause) for clause in list(set(clauses))]
         clauses |= new
 
 
@@ -78,9 +97,8 @@ def main():
         knowledge_base |= {Sentence(sen)}
 
     print(resolution(knowledge_base, 'Horned'))
-    #print(resolution(knowledge_base, 'Magical'))
-    #print(resolution(knowledge_base, 'Mythical'))
-
+    print(resolution(knowledge_base, 'Magical'))
+    print(resolution(knowledge_base, 'Mythical'))
 
 if __name__ == '__main__':
     main()
