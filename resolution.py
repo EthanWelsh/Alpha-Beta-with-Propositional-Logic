@@ -32,7 +32,16 @@ def negate(sentence):
 
 def resolve(sen_a, sen_b):
 
-    literals = sen_a.terms + sen_b.terms
+    if isinstance(sen_a, Sentence):
+        sen_a = sen_a.terms
+    if isinstance(sen_b, Sentence):
+        sen_b = sen_b.terms
+    if isinstance(sen_a, str):
+        sen_a = [sen_a]
+    if isinstance(sen_b, str):
+        sen_b = [sen_b]
+
+    literals = sen_a + sen_b
     resolvents = []
 
     for (x, y) in itertools.combinations(literals, 2):
@@ -44,16 +53,14 @@ def resolve(sen_a, sen_b):
 
 def resolution(kb, alpha):
 
-    alpha = Sentence(negate(alpha))
-    clauses = kb | {alpha}
-
+    clauses = kb | {'~' + alpha}
     new = set()
     while True:
         for clause_a, clause_b in itertools.combinations(clauses, 2):
             resolvents = resolve(clause_a, clause_b)
             if [] in resolvents:
                 return True
-            new |= {resolvents}
+            new |= set(resolvents)
         if clauses.issuperset(new):
             return False
         clauses |= new
@@ -68,14 +75,6 @@ def main():
                                           "[('not','mammal'),'horned'],"
                                           "[('not','horned'),'magical']]")
 
-
-    a = Sentence(('s', ('not', 'r')))
-    b = Sentence((('not', 's'), 'r'))
-
-    print(resolve(a, b))
-
-
-    """
     knowledge_base = set()
 
     for sen in cnf:
@@ -84,7 +83,6 @@ def main():
     print(resolution(knowledge_base, 'horned'))
     print(resolution(knowledge_base, 'magical'))
     print(resolution(knowledge_base, 'mythical'))
-    """
 
 if __name__ == '__main__':
     main()
