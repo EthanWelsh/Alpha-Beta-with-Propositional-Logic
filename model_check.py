@@ -1,5 +1,6 @@
 import ast
 import itertools
+import sys
 
 
 class AtomicSentence:
@@ -74,16 +75,14 @@ def main():
         "['or', 'Big', 'Dumb', ['->', 'Big', 'Dumb']]",  # G
     ]
 
-    for problem in check:
-        tree = ast.literal_eval(problem)
-        atomic = AtomicSentence(tree)
+    tree = ast.literal_eval(sys.argv[1])
+    atomic = AtomicSentence(tree)
 
-        unsatisfiable, satisfiable, valid = atomic.model_check()
+    unsatisfiable, satisfiable, valid = atomic.model_check()
 
-        print()
-        print("Unsatisfiable:", unsatisfiable)
-        print("Satisfiable:", satisfiable)
-        print("Valid:", valid)
+    print("Unsatisfiable:", unsatisfiable)
+    print("Satisfiable:", satisfiable)
+    print("Valid:", valid)
 
 
 if __name__ == '__main__':
