@@ -45,17 +45,15 @@ def resolve(sen_a, sen_b):
 
 
 def resolution(kb, alpha):
-
     clauses = kb | {Sentence([negate(alpha)])}
     new = set()
 
     while True:
         for clause_a, clause_b in itertools.combinations(clauses, 2):
-
             resolvents = resolve(clause_a, clause_b)
 
             if None in resolvents:
-                return True
+                return False
             new |= resolvents
         if clauses.issuperset(new):
             return [str(clause) for clause in list(set(clauses))]
@@ -81,7 +79,6 @@ def main():
     print(resolution(kb, 'Horned'))
     print(resolution(kb, 'Magical'))
     print(resolution(kb, 'Mythical'))
-
 
 
 if __name__ == '__main__':
