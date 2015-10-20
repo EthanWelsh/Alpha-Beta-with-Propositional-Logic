@@ -32,19 +32,14 @@ def negate(sentence):
 
 def resolve(sen_a, sen_b):
 
-    set_a = set()
-    set_b = set()
+    literals = sen_a.terms + sen_b.terms
+    resolvents = []
 
-    for a in sen_a.terms:
-        set_a |= {a}
+    for (x, y) in itertools.combinations(literals, 2):
+        if x == negate(y):
+            resolvents += (set(literals) - {x, negate(x)})
 
-    for b in sen_b.terms:
-        set_b |= {b}
-
-    neg_a = {negate(a) for a in sen_a.terms}
-    neg_b = {negate(b) for b in sen_b.terms}
-
-    return Sentence(list((set_a - neg_b) | (set_b - neg_a)))
+    return resolvents
 
 
 def resolution(kb, alpha):
@@ -73,25 +68,23 @@ def main():
                                           "[('not','mammal'),'horned'],"
                                           "[('not','horned'),'magical']]")
 
+
+    a = Sentence(('s', ('not', 'r')))
+    b = Sentence((('not', 's'), 'r'))
+
+    print(resolve(a, b))
+
+
+    """
     knowledge_base = set()
 
     for sen in cnf:
         knowledge_base |= {Sentence(sen)}
 
-    #print(resolution(knowledge_base, 'horned'))
-    #print(resolution(knowledge_base, 'magical'))
-    #print(resolution(knowledge_base, 'mythical'))
-
-    a = Sentence(('p', 'q'))
-    b = Sentence((('not', 'p'), 'r'))
-
-    print(a)
-    print(b)
-
-    res = resolve(a, b)
-    print(res)
-
-    #print(res)
+    print(resolution(knowledge_base, 'horned'))
+    print(resolution(knowledge_base, 'magical'))
+    print(resolution(knowledge_base, 'mythical'))
+    """
 
 if __name__ == '__main__':
     main()
